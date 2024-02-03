@@ -33,6 +33,30 @@ class TokenService {
         const token = await Token.deleteOne({refreshToken})
         return token;
     }
+
+    async findToken(refreshToken) {
+        const token = await Token.findOne({refreshToken})
+        return token;
+    }
+
+
+    async validateRefreshToken(refreshToken) {
+        try {
+            const data = jwt.verify(refreshToken, process.env.JWT_KEY_REFRESH);
+            return data;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    async validateAccessToken(accessToken) {
+        try {
+            const data = jwt.verify(refreshToken, process.env.JWT_KEY);
+            return data;
+        } catch (error) {
+            return null;
+        }
+    }
 }
 
 

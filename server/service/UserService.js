@@ -1,9 +1,9 @@
-const UserModel = require("../models/User");
 const bcrypt = require('bcrypt');
 const uuid = require("uuid");
 const MailService = require('./MailService')
 const { generateTokens, saveToken } = require("./TokenService");
 const TokenService = require("./TokenService");
+const User = require("../models/User");
 
 
 
@@ -85,6 +85,37 @@ class UserService {
     async logout(refreshToken) {
         const token = await TokenService.removeToken(refreshToken);
         return token
+    }
+
+
+    async refresh(refreshToken) {
+        if(!refreshToken) {
+            throw new Error("Wrong token")
+        }
+
+        const userData = TokenService.validateRefreshToken(refreshToken);
+        const tokenDB = await TokenService.findToken(refreshToken);
+
+        if(!userData || !tokenDB) {
+            throw new Error("Unauthorized")
+        }
+
+        const user = User.findById(userData.id)
+
+        const userInput = {
+            id: user._id,
+            email: user.email,
+            isActivated: user.isActivated
+         }
+ 
+         const tokens = generateTokens(userInput);
+         await saveToken(userInput.id, tokens.refreshToken);
+ 
+ 
+         return {
+             ...tokens,
+             user: userInput,
+         }
     }
 }
 
