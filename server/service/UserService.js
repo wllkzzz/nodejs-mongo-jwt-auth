@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const uuid = require("uuid");
 const MailService = require('./MailService')
 const { generateTokens, saveToken } = require("./TokenService");
+const TokenService = require("./TokenService");
 
 
 
@@ -79,6 +80,11 @@ class UserService {
          }
         
 
+    }
+
+    async logout(refreshToken) {
+        const token = await TokenService.removeToken(refreshToken);
+        return token
     }
 }
 
