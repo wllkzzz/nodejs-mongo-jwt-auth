@@ -48,6 +48,38 @@ class UserService {
         await user.save();
     }
 
+
+    async login(email, password) {
+
+        const user = await UserModel.findOne({email}) 
+
+        if (!user) {
+            throw new Error("The user doesn't exist")
+        }
+
+        const comparePass = await bcrypt.compare(password, user.password);
+
+        if(!comparePass) {
+            throw new Error("Wrong password")
+        }
+
+        const userInput = {
+            id: user._id,
+            email: user.email,
+            isActivated: user.isActivated
+         }
+ 
+         const tokens = generateTokens(userInput);
+         await saveToken(userInput.id, tokens.refreshToken);
+ 
+ 
+         return {
+             ...tokens,
+             user: userInput,
+         }
+        
+
+    }
 }
 
 module.exports = new UserService();
