@@ -12,9 +12,7 @@ class UserService {
         const candidate = await UserModel.findOne({email});
 
         if(candidate) {
-            resizeBy.status(400).json({
-                "message": "User with this email already exists"
-            })
+          throw new Error("User already exists")
         }
 
         const hashPassword = await bcrypt.hash(password, 5);
@@ -36,6 +34,18 @@ class UserService {
             ...tokens,
             user: userInput,
         }
+    }
+
+    async activate(activationLink) {
+        const user = await UserModel.findOne({activationLink})
+
+        if(!user) {
+            throw new Error("Something is wrong with the activation link")
+        }
+
+        user.isActivated = true;
+
+        await user.save();
     }
 
 }
