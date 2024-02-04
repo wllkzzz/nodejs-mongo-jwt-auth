@@ -5,6 +5,8 @@ const MailService = require('./MailService')
 const { generateTokens, saveToken } = require("./TokenService");
 const TokenService = require("./TokenService");
 const User = require("../models/User");
+const ApiError = require('../error/ApiError');
+const UserModel = require("../models/User")
 
 
 
@@ -14,7 +16,7 @@ class UserService {
         const candidate = await UserModel.findOne({email});
 
         if(candidate) {
-          throw new Error("User already exists")
+          throw ApiError.BadRequest("The user already exists")
         }
 
         const hashPassword = await bcrypt.hash(password, 5);
@@ -42,7 +44,7 @@ class UserService {
         const user = await UserModel.findOne({activationLink})
 
         if(!user) {
-            throw new Error("Something is wrong with the activation link")
+            throw ApiError.BadRequest("Something is wrong with the activation link")
         }
 
         user.isActivated = true;
@@ -56,13 +58,13 @@ class UserService {
         const user = await UserModel.findOne({email}) 
 
         if (!user) {
-            throw new Error("The user doesn't exist")
+            throw ApiError.BadRequest("The user doesn't exist")
         }
 
         const comparePass = await bcrypt.compare(password, user.password);
 
         if(!comparePass) {
-            throw new Error("Wrong password")
+            throw ApiError.BadRequest("Wrong password")
         }
 
         const userInput = {
@@ -91,14 +93,14 @@ class UserService {
 
     async refresh(refreshToken) {
         if(!refreshToken) {
-            throw new Error("Wrong token")
+            throw ApiError.BadRequest("Wrong token")
         }
 
         const userData = TokenService.validateRefreshToken(refreshToken);
         const tokenDB = await TokenService.findToken(refreshToken);
 
         if(!userData || !tokenDB) {
-            throw new Error("Unauthorized")
+            throw ApiError.UnauthorizedError()
         }
 
         const user = User.findById(userData.id)
@@ -124,7 +126,7 @@ class UserService {
         const user = await User.findOne({email});
 
         if (!user) {
-            throw new Error("The user doesn't exist");
+            throw ApiError.BadRequest("The user doesn't exist")
         }
 
         const secret = user._id + process.env.JWT_KEY;
