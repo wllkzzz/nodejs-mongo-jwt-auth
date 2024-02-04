@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const uuid = require("uuid");
+const jwt = require("jsonwebtoken")
 const MailService = require('./MailService')
 const { generateTokens, saveToken } = require("./TokenService");
 const TokenService = require("./TokenService");
@@ -116,6 +117,25 @@ class UserService {
              ...tokens,
              user: userInput,
          }
+    }
+
+
+    async sendResetMail(email) {
+        const user = await User.findOne({email});
+
+        if (!user) {
+            throw new Error("The user doesn't exist");
+        }
+
+        const secret = user._id + process.env.JWT_KEY;
+
+        const token = jwt.sign({id: user._id}, secret, {
+            expiresIn: "10m",
+        })
+
+        const link=`${process.env.API_URL}/api/resetPassword/${user._id}/${token}`;
+
+        await MailService.sendResetMail(email, link);
     }
 }
 

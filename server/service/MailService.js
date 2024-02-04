@@ -33,6 +33,23 @@ class MailService {
             `
         })
     }
+
+
+    async sendResetMail(to, link) {
+        await this.transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to,
+            subject: "Account Recovery",
+            text: "",
+            html: 
+            `
+            <div>
+                <h1>To recover your account follow this link:</h1>
+                <a href="${link}">${link}</a>
+            </div>
+            `
+        })
+    }
 }
 
 module.exports = new MailService();

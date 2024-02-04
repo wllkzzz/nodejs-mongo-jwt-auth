@@ -68,6 +68,30 @@ class UserController {
             console.log(error);
         }
     }
+
+
+    async sendResetPass(req, res, next) {
+        try {
+
+            const erros = validationResult(req);
+
+            if (!erros.isEmpty()) {
+                return res.status(400).json({"message": "Validation error"})
+            }
+
+            const {email} = req.body;
+            await UserService.sendResetMail(email)
+
+            return res.json({"message": "The letter has been sent" })
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+
+    async resetPass(req, res, next) {
+
+    }
 }
 
 module.exports = new UserController();
