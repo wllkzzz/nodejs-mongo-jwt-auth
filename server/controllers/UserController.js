@@ -90,7 +90,15 @@ class UserController {
 
 
     async resetPass(req, res, next) {
+        try {
+            const {password, password_confirmation} = req.body;
+            const {id, token} = req.params;
 
+            await UserService.setNewPass(id, token, password, password_confirmation)
+            res.status(200).json({"message": "Password has been changed"})
+        } catch (error) {
+            next(error)
+        }
     }
 }
 

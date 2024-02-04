@@ -139,6 +139,29 @@ class UserService {
 
         await MailService.sendResetMail(email, link);
     }
+
+    async setNewPass(id, token, password, password_confirmation) {
+        const user = await User.findById(id);
+        const secret = user._id + process.env.JWT_KEY;
+
+        jwt.verify(token, secret)
+
+        if (!password || !password_confirmation) {
+            throw ApiError.BadRequest("")
+          } else if (password !== password_confirmation) {
+            throw ApiError.BadRequest("Passwords don't match")
+          } else {
+            
+            const salt = await bcrypt.genSalt(5);
+            const newHashPassword = await bcrypt.hash(password, salt);
+          
+            const updatedUser = await User.findByIdAndUpdate(
+                user._id,
+                { password: newHashPassword },
+            );
+          }
+          
+    }
 }
 
 module.exports = new UserService();
